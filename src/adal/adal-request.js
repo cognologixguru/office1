@@ -1,21 +1,16 @@
 var q = require('q');
 var AuthenticationContext = require('adal-angular');
+debugger;
 var adalConfig = require('./adal-config');
 
 var _adal = new AuthenticationContext(adalConfig);
+var _oauthData = {
+    isAuthenticated: false,
+    userName: '',
+    loginError: '',
+    profile: ''
+};
 
-
-/*
-OAuth flows for authentication and retrieving access tokens for the different resources are based on callbacks. 
-The web application redirects to Azure Active Directory which executes the specific flow and redirects back to the application 
-including information specific to the particular flow. 
-For an application to use OAuth it has to handle the callbacks and process the information retrieved from AAD.
-
-The processAdalCallback function executes only if an AAD OAuth hash has been provided in the URL (line 11). 
-This is how AAD passes its information to web applications in the implicit OAuth flow and this is what the function is checking for. 
-Based on the provided hash ADAL JS tries to determine the type of flow that the hash belongs to (line 13). 
-After validating the hash (line 26) any callbacks registered with ADAL JS will be executed completing the previously started flow. 
-*/
 var processAdalCallback = function () {
     var hash = window.location.hash;
 
@@ -66,7 +61,18 @@ var processAdalCallback = function () {
     }
 }
 
-// The isAuthenticated function returns a promise that resolves whenever the user gets authenticated.
+var updateDataFromCache = function (resource) {
+    // only cache lookup here to not interrupt with events
+    var token = _adal.getCachedToken(resource);
+    _oauthData.isAuthenticated = token !== null && token.length > 0;
+    var user = _adal.getCachedUser() || {
+        userName: ''
+    };
+    _oauthData.userName = user.userName;
+    _oauthData.profile = user.profile;
+    _oauthData.loginError = _adal.getLoginError();
+};
+
 var isAuthenticated = function () {
     var deferred = q.defer();
 
@@ -97,13 +103,38 @@ var isAuthenticated = function () {
     return deferred.promise;
 }
 
-// This function is responsible for executing a web request to and endpoint secured with AAD such as 
-// SharePoint Online API or Microsoft Graph. Such requests can only be executed by users who are authenticated 
-// and who have a valid access token to the specific endpoint. 
+var makeRequest = function (settings) {
+    var deferred = q.defer();
+
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (this.readyState === 4) {
+            if (this.status === 200) {
+                deferred.resolve(this.response);
+            } else if (this.status >= 400) {
+                deferred.reject();
+            }
+        }
+    }
+    debugger;
+    xhr.open(settings.method || 'GET', settings.url, true);
+
+    for (var header in settings.headers) {
+        xhr.setRequestHeader(header, settings.headers[header]);
+    }
+
+    xhr.responseType = settings.dataType || 'json';
+    xhr.send(settings.data);
+
+    return deferred.promise;
+}
+
 var adalRequest = function (settings) {
+    debugger;
     var deferred = q.defer();
 
     isAuthenticated().then(function () {
+        debugger;
         var resource = _adal.getResourceForEndpoint(settings.url);
 
         if (!resource) {
@@ -134,6 +165,7 @@ var adalRequest = function (settings) {
                 _adal.info('Login already in progress');
                 deferred.reject();
             } else if (isEndpoint) {
+                debugger;
                 _adal.acquireToken(resource, function (error, tokenOut) {
                     if (error) {
                         deferred.reject();

@@ -11,6 +11,7 @@
     "validate": "./node_modules/.bin/validate-office-addin"
   },
   "dependencies": {
+    "@microsoft/office-js-helpers": "^0.6.0",
     "adal-angular": "^1.0.14",
     "core-js": "^2.4.1",
     "office-addin-validator": "^1.0.1",

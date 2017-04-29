@@ -8,22 +8,40 @@ import Adal = require('./adal/adal-request.js');
 (() => {
     const title = 'My Office Add-in';
     const container = document.querySelector('#container');
-
+    let component = this;
+    Adal.processAdalCallback();
     /* Render application after Office initializes */
     Office.initialize = () => {
-        Adal.processAdalCallback();
+        if (window === window.parent) {
+            component.serverRequest = Adal.adalRequest({
+                url: 'https://graph.microsoft.com/v1.0/me/memberOf?$top=500',
+                headers: {
+                    'Accept': 'application/json;odata.metadata=full'
+                }
+            }).then((data) => {
+                console.log(data);
+            });
+        };
+
 
         render(
             <App title={title} />,
             container
         );
+    };
+
+    if (window === window.parent) {
+        debugger;
+        component.serverRequest = Adal.adalRequest({
+            url: 'https://graph.microsoft.com/v1.0/me/memberOf?$top=500',
+            headers: {
+                'Accept': 'application/json;odata.metadata=full'
+            }
+        }).then((data) => {
+            debugger;
+            console.log(data);
+        });
+        /* Initial render showing a progress bar */
+        render(<Progress title={title} logo='assets/logo-filled.png' message='Please sideload your addin to see app body.' />, container);
     }
-});
-
-Adal.processAdalCallback();
-if (window === window.parent) {
-    /* Initial render showing a progress bar */
-    render(<Progress title={title} logo='assets/logo-filled.png' message='Please sideload your addin to see app body.' />, container);
-}
 })();
-
