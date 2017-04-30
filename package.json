@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@microsoft/office-js-helpers": "^0.6.0",
+    "@types/jquery": "^2.0.41",
     "adal-angular": "^1.0.14",
     "core-js": "^2.4.1",
+    "jquery": "^3.2.1",
     "office-addin-validator": "^1.0.1",
     "office-ui-fabric-react": "^2.6.0",
     "q": "^1.5.0",

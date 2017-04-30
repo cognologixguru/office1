@@ -3,45 +3,47 @@ import { render } from 'react-dom';
 import { App } from './components/app';
 import { Progress } from './components/progress';
 import './assets/styles/global.scss';
-import Adal = require('./adal/adal-request.js');
+import { Authenticator, DefaultEndpoints, Utilities, IToken } from '@microsoft/office-js-helpers';
+
+
+let authenticator = new Authenticator();
+
+function getToken(): IToken {
+    return authenticator.tokens.get(DefaultEndpoints.AzureAD);
+}
+
+// register Microsoft (Azure AD 2.0 Converged auth) endpoint using
+
+authenticator.endpoints.registerAzureADAuth('d560431b-2b07-4553-a24c-e0075fc3bbb6', 'sanitariumdev.onmicrosoft.com');
+debugger;
+// for the default Microsoft endpoint
+authenticator
+    .authenticate(DefaultEndpoints.AzureAD)
+    .then((token) => { /* Microsoft Token */
+        debugger;
+        console.log(token);
+    })
+    .catch(Utilities.log);
+
+
 
 (() => {
     const title = 'My Office Add-in';
     const container = document.querySelector('#container');
-    let component = this;
-    Adal.processAdalCallback();
+
     /* Render application after Office initializes */
     Office.initialize = () => {
-        if (window === window.parent) {
-            component.serverRequest = Adal.adalRequest({
-                url: 'https://graph.microsoft.com/v1.0/me/memberOf?$top=500',
-                headers: {
-                    'Accept': 'application/json;odata.metadata=full'
-                }
-            }).then((data) => {
-                console.log(data);
-            });
+        if (Authenticator.isAuthDialog()) {
+            return;
         };
-
-
         render(
-            <App title={title} />,
+            <App title={title} getToken={getToken} />,
             container
         );
+
     };
 
-    if (window === window.parent) {
-        debugger;
-        component.serverRequest = Adal.adalRequest({
-            url: 'https://graph.microsoft.com/v1.0/me/memberOf?$top=500',
-            headers: {
-                'Accept': 'application/json;odata.metadata=full'
-            }
-        }).then((data) => {
-            debugger;
-            console.log(data);
-        });
-        /* Initial render showing a progress bar */
-        render(<Progress title={title} logo='assets/logo-filled.png' message='Please sideload your addin to see app body.' />, container);
-    }
+    /* Initial render showing a progress bar */
+    render(<Progress title={title} logo='assets/logo-filled.png' message='Please sideload your addin to see app body.' />, container);
+
 })();
