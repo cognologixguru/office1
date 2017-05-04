@@ -6,7 +6,6 @@ import { HeroList, HeroListItem } from './hero-list';
 
 export interface AppProps {
     title: string;
-    getToken;
 }
 
 export interface AppState {
@@ -42,7 +41,7 @@ export class App extends React.Component<AppProps, AppState> {
     }
 
     click = async () => {
-        console.log(this.props.getToken());
+
         /**
          * Insert your Outlook code here
          */

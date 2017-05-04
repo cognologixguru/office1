@@ -3,28 +3,26 @@ import { render } from 'react-dom';
 import { App } from './components/app';
 import { Progress } from './components/progress';
 import './assets/styles/global.scss';
-import { Authenticator, DefaultEndpoints, Utilities, IToken } from '@microsoft/office-js-helpers';
+import { Authenticator } from '@microsoft/office-js-helpers';
+import { PlannerModel } from './core';
 
 
-let authenticator = new Authenticator();
-
-function getToken(): IToken {
-    return authenticator.tokens.get(DefaultEndpoints.AzureAD);
-}
+// let authenticator = new Authenticator();
 
 // register Microsoft (Azure AD 2.0 Converged auth) endpoint using
 
-authenticator.endpoints.registerAzureADAuth('d560431b-2b07-4553-a24c-e0075fc3bbb6', 'sanitariumdev.onmicrosoft.com');
-debugger;
-// for the default Microsoft endpoint
-authenticator
-    .authenticate(DefaultEndpoints.AzureAD)
-    .then((token) => { /* Microsoft Token */
-        debugger;
-        console.log(token);
-    })
-    .catch(Utilities.log);
 
+debugger;
+let model = new PlannerModel();
+
+// for the default Microsoft endpoint
+// authenticator
+//     .authenticate(DefaultEndpoints.AzureAD)
+//     .then((token) => { /* Microsoft Token */
+//         debugger;
+//         console.log(token);
+//     })
+//     .catch(Utilities.log);
 
 
 (() => {
@@ -33,14 +31,12 @@ authenticator
 
     /* Render application after Office initializes */
     Office.initialize = () => {
-        if (Authenticator.isAuthDialog()) {
-            return;
+        if (!Authenticator.isAuthDialog()) {
+            render(
+                <App title={title} />,
+                container
+            );
         };
-        render(
-            <App title={title} getToken={getToken} />,
-            container
-        );
-
     };
 
     /* Initial render showing a progress bar */
