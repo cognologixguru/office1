@@ -32,7 +32,7 @@ export class PlannerTasks implements IPlannerService {
      * at any point of time. Please modify this to use your own
      * clientId.
      */
-    clientId = 'd560431b-2b07-4553-a24c-e0075fc3bbb6';
+    clientId = '<my client id>';
 
     constructor() {
 
